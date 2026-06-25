@@ -112,37 +112,45 @@ graph TD
 
 ### Requisitos previos
 - Docker Desktop en ejecución.
-- Java JDK 17 o superior instalado y configurado en el PATH.
+- Java JDK 17 o superior instalado y configurado en el PATH (se recomienda JDK 21).
 - Maven instalado.
+- Git instalado.
 
-### Paso 1: Levantar RabbitMQ
-En la raíz del proyecto, ejecute:
+### Paso 1: Clonar el Repositorio
+Para clonar este proyecto e ingresar a la carpeta raíz del mismo, ejecuta en tu terminal:
+```bash
+git clone https://github.com/Packeins/Tallers-semana-11-G8-smart-campus-request-router.git
+cd Tallers-semana-11-G8-smart-campus-request-router
+```
+
+### Paso 2: Levantar RabbitMQ
+En la raíz del proyecto, ejecuta:
 ```bash
 docker compose up -d
 ```
-Verifique que el contenedor esté corriendo con `docker ps`. Puede acceder a la consola de administración en http://localhost:15672 (usuario: `guest`, contraseña: `guest`).
+Verifica que el contenedor esté corriendo con `docker ps`. Puedes acceder a la consola de administración en http://localhost:15672 (usuario: `guest`, contraseña: `guest`).
 
-### Paso 2: Configurar Exchanges, Colas y Enlaces
-Ejecute el script de inicialización desde una terminal de PowerShell:
+### Paso 3: Configurar Exchanges, Colas y Enlaces
+Ejecuta el script de inicialización desde una terminal de PowerShell:
 ```powershell
 powershell -File .\scripts\setup-rabbitmq.ps1
 ```
 *(O `./scripts/setup-rabbitmq.sh` si se encuentra en un entorno Unix/Bash).*
 
-### Paso 3: Compilar el Proyecto
+### Paso 4: Compilar el Proyecto
 Compile el proyecto con Maven:
 ```bash
 mvn clean package
 ```
 
-### Paso 4: Ejecutar la Aplicación
+### Paso 5: Ejecutar la Aplicación
 Inicie el enrutador de integración ejecutando el archivo JAR compilado:
 ```bash
 java -jar target/smart-campus-request-router-1.0.0.jar
 ```
 *(También puede usar `mvn spring-boot:run` si no hay problemas de encoding en la consola).*
 
-### Paso 5: Publicar Mensajes de Prueba
+### Paso 6: Publicar Mensajes de Prueba
 Abra otra terminal y ejecute el script para inyectar mensajes de prueba en RabbitMQ:
 ```powershell
 powershell -File .\scripts\publish-messages.ps1
@@ -178,7 +186,7 @@ powershell -File .\scripts\publish-messages.ps1
    Facilita la mantenibilidad, escalabilidad y estandarización de los datos. Simplifica la adición de nuevos consumidores y productores a la arquitectura de integración, ya que solo tienen que acoplarse al formato canónico y no entre sí.
 6. **¿Qué limitaciones tiene esta solución?**
    - Si la cola `campus.requests.in` recibe un volumen masivo de mensajes, el enrutador de Camel podría convertirse en un cuello de botella si se ejecuta en un solo nodo sin escalabilidad horizontal.
-   - En caso de caída de la base de datos o fallo del enrutador Camel en medio de la transacción, el mensaje podría perderse si no se habilita confirmación explícita de recepción (ACK) en RabbitMQ.
+   - En caso de caída de la base de datos o fallo del enrutador Camel en medio de la transacción, el mensaje podría perderse si no se habilita confirmación explícitamente de recepción (ACK) en RabbitMQ.
 7. **¿Cómo se podría mejorar el manejo de errores?**
    - Implementando una cola de tipo Dead Letter Exchange (DLX) para manejar fallos de red o errores de parseo irrecuperables.
    - Añadiendo políticas de reintento con retroceso exponencial (*exponential backoff*) y disyuntores (*circuit breakers*).
